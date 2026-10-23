@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Grabador Prestocast</string>
+    <string name="recording_quality">Stereo 128 kbps 44.1kHz MP3</string>
+    <string name="record">Grabar</string>
+    <string name="stop">Detener</string>
+    <string name="pause">Pausar</string>
+    <string name="resume">Reanudar</string>
+    <string name="send_to_auphonic">Enviar a Auphonic</string>
+    <string name="auphonic_settings">Configuración de Auphonic</string>
+    <string name="api_key_label">Auphonic API Key / Bearer Token</string>
+    <string name="preset_label">Custom Preset (ID o nombre)</string>
+    <string name="save">Guardar</string>
+    <string name="cancel">Cancelar</string>
+    <string name="open_file">Abrir archivo MP3</string>
+    <string name="share">Compartir</string>
+    <string name="original_audio">Audio Original</string>
+    <string name="processed_audio">Audio Procesado (Recortado)</string>
+    <string name="status_uploading">Subiendo audio a Auphonic...</string>
+    <string name="status_processing">Procesando audio en Auphonic...</string>
+    <string name="status_downloading">Descargando audio procesado...</string>
+    <string name="status_trimming">Ajustando duración exacta al original...</string>
+    <string name="status_completed">¡Proceso completado con éxito!</string>
+    <string name="status_error">Error en el proceso</string>
+</resources>
