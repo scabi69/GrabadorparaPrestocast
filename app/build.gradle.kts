@@ -18,8 +18,8 @@ android {
         applicationId = "com.prestocast.grabador"
         minSdk = 24
         targetSdk = 35
-        versionCode = 10
-        versionName = "1.2.7"
+        versionCode = 11
+        versionName = "1.2.7.1"
 
         buildConfigField("String", "BUILD_TIMESTAMP", "\"$buildTimestamp\"")
 
@@ -45,6 +45,11 @@ android {
     buildFeatures {
         compose = true
         buildConfig = true
+    }
+    packaging {
+        jniLibs {
+            useLegacyPackaging = false
+        }
     }
 }
 

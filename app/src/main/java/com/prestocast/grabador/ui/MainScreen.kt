@@ -21,6 +21,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -223,26 +224,31 @@ fun MainScreen(
                         ) {
                             Row(
                                 verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.Center
+                                horizontalArrangement = Arrangement.Center,
+                                modifier = Modifier.fillMaxWidth()
                             ) {
                                 Icon(
                                     Icons.Default.GraphicEq,
                                     contentDescription = null,
                                     tint = MaterialTheme.colorScheme.primary,
-                                    modifier = Modifier.padding(end = 8.dp)
+                                    modifier = Modifier.padding(end = 6.dp)
                                 )
                                 val channelsText = if (uiState.recChannels == 2) "Stereo" else "Mono"
                                 val sampleRateKHz = String.format(Locale.getDefault(), "%.1f", uiState.recSampleRateHz / 1000.0)
                                 Text(
-                                    text = "Ajustes de Grabación: $channelsText ${uiState.recBitrateKbps} kbps ${sampleRateKHz}kHz M4A",
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    fontWeight = FontWeight.SemiBold
+                                    text = "Ajustes: $channelsText ${uiState.recBitrateKbps} kbps ${sampleRateKHz}kHz M4A",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    fontSize = 12.sp,
+                                    fontWeight = FontWeight.SemiBold,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis
                                 )
                             }
 
                             Row(
                                 verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.Center
+                                horizontalArrangement = Arrangement.Center,
+                                modifier = Modifier.fillMaxWidth()
                             ) {
                                 Icon(
                                     Icons.Default.Mic,
@@ -255,7 +261,10 @@ fun MainScreen(
                                 Text(
                                     text = "Fuente de entrada: ${uiState.recInputDeviceName}",
                                     style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    fontSize = 11.sp,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis
                                 )
                             }
 
@@ -272,11 +281,15 @@ fun MainScreen(
                                     onCheckedChange = { viewModel.updateAutoSaveOriginalToDownloads(it) },
                                     modifier = Modifier.size(24.dp)
                                 )
-                                Spacer(Modifier.width(8.dp))
+                                Spacer(Modifier.width(6.dp))
                                 Text(
                                     text = "Guardar automáticamente grabación original en Descargas",
                                     style = MaterialTheme.typography.bodySmall,
-                                    fontWeight = FontWeight.SemiBold
+                                    fontSize = 11.sp,
+                                    fontWeight = FontWeight.SemiBold,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis,
+                                    modifier = Modifier.weight(1f, fill = false)
                                 )
                             }
                         }
@@ -525,10 +538,15 @@ fun MainScreen(
                                             Icon(
                                                 Icons.Default.AudioFile,
                                                 contentDescription = null,
-                                                modifier = Modifier.size(18.dp)
+                                                modifier = Modifier.size(16.dp)
                                             )
-                                            Spacer(Modifier.width(6.dp))
-                                            Text("Original")
+                                            Spacer(Modifier.width(4.dp))
+                                            Text(
+                                                text = "Original",
+                                                fontSize = 12.sp,
+                                                maxLines = 1,
+                                                overflow = TextOverflow.Ellipsis
+                                            )
                                         }
                                     }
                                 )
@@ -553,10 +571,15 @@ fun MainScreen(
                                                 Icons.Default.CheckCircle,
                                                 contentDescription = null,
                                                 tint = if (hasProcessed) AuphonicGreen else Color.Gray,
-                                                modifier = Modifier.size(18.dp)
+                                                modifier = Modifier.size(16.dp)
                                             )
-                                            Spacer(Modifier.width(6.dp))
-                                            Text("Procesado / MP3")
+                                            Spacer(Modifier.width(4.dp))
+                                            Text(
+                                                text = "Procesado MP3",
+                                                fontSize = 12.sp,
+                                                maxLines = 1,
+                                                overflow = TextOverflow.Ellipsis
+                                            )
                                         }
                                     }
                                 )
@@ -590,13 +613,19 @@ fun MainScreen(
                                     Text(
                                         text = if (isOriginalSelected) "Fichero Seleccionado: Audio Original" else "Fichero Seleccionado: Audio Procesado (MP3)",
                                         fontWeight = FontWeight.Bold,
-                                        style = MaterialTheme.typography.labelLarge,
+                                        style = MaterialTheme.typography.labelMedium,
+                                        fontSize = 12.sp,
+                                        maxLines = 1,
+                                        overflow = TextOverflow.Ellipsis,
                                         color = if (isOriginalSelected) MaterialTheme.colorScheme.onSecondaryContainer else MaterialTheme.colorScheme.onPrimaryContainer
                                     )
                                     Text(
                                         text = cleanDisplayName,
-                                        style = MaterialTheme.typography.bodyMedium,
-                                        fontWeight = FontWeight.SemiBold
+                                        style = MaterialTheme.typography.bodySmall,
+                                        fontSize = 12.sp,
+                                        fontWeight = FontWeight.SemiBold,
+                                        maxLines = 1,
+                                        overflow = TextOverflow.Ellipsis
                                     )
                                     Text(
                                         text = "Duración exactitud: ${formatTime(currentDurationMs)}",
@@ -657,27 +686,31 @@ fun MainScreen(
                                     ) {
                                         Button(
                                             onClick = { shareAudioFile(context, currentFile) },
-                                            modifier = Modifier.weight(1f)
+                                            modifier = Modifier.weight(1f),
+                                            contentPadding = PaddingValues(horizontal = 6.dp, vertical = 6.dp)
                                         ) {
                                             Icon(
                                                 Icons.Default.Share,
                                                 contentDescription = null,
-                                                modifier = Modifier.padding(end = 4.dp)
+                                                modifier = Modifier.size(16.dp)
                                             )
-                                            Text("Compartir")
+                                            Spacer(Modifier.width(4.dp))
+                                            Text("Compartir", fontSize = 12.sp, maxLines = 1)
                                         }
 
                                         Button(
                                             onClick = { viewModel.saveSelectedFileToDownloads() },
                                             modifier = Modifier.weight(1f),
-                                            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.tertiary)
+                                            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.tertiary),
+                                            contentPadding = PaddingValues(horizontal = 6.dp, vertical = 6.dp)
                                         ) {
                                             Icon(
                                                 Icons.Default.Download,
                                                 contentDescription = null,
-                                                modifier = Modifier.padding(end = 4.dp)
+                                                modifier = Modifier.size(16.dp)
                                             )
-                                            Text("Guardar")
+                                            Spacer(Modifier.width(4.dp))
+                                            Text("Guardar", fontSize = 12.sp, maxLines = 1)
                                         }
                                     }
 
@@ -1951,7 +1984,7 @@ fun TextEditorScreen(
     onSave: (String) -> Unit,
     onSaveAndRecord: (String) -> Unit
 ) {
-    var textFieldValue by remember {
+    var textFieldValue by rememberSaveable(stateSaver = TextFieldValue.Saver) {
         mutableStateOf(
             TextFieldValue(
                 text = initialText,

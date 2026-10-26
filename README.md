@@ -1,4 +1,4 @@
-# 🎙️ Grabador Prestocast (v1.2.7)
+# 🎙️ Grabador Prestocast (v1.2.7.1)
 
 **Grabador Prestocast** es una aplicación nativa para Android desarrollada en Kotlin y Jetpack Compose, diseñada para grabar audio en alta fidelidad (formato `.m4a`/`AAC` nativo o archivos locales importados), transcodificar localmente a **MP3 genuino** mediante el motor C/JNI **LAME MP3**, integrarse con el servicio de postprocesamiento en la nube **Auphonic.com** (nivelación inteligente, reducción de ruido con IA y salida MP3), y proporcionar un sistema de guión / teleprompter para podcasts, boletines y locuciones.
 
@@ -23,6 +23,7 @@
 - **Resaltado Visual en Desplegables**: En todos los desplegables de configuración, la opción elegida actualmente aparece resaltada con **texto en negrita**, **icono de verificación ✔️** y **fondo coloreado**.
 
 ### 📜 Editor de Guión / Escaleta e Integración Avanzada de Portapapeles
+- **Persistencia en Rotación de Pantalla 🔄**: El contenido del guión, posición del cursor y selecciones se conservan intactos al rotar la pantalla del móvil mediante `rememberSaveable(stateSaver = TextFieldValue.Saver)`.
 - **Diálogo de Confirmación de Cambios sin Guardar ⚠️**: Al intentar salir del editor sin haber guardado los cambios realizados, la app muestra un cuadro de diálogo interactivo con las opciones *"Guardar y Salir"*, *"Descartar"* o *"Cancelar"*.
 - **Inserción en la Posición Exacta del Cursor 📋**: El botón **"Pegar"** utiliza `TextFieldValue` para insertar el texto del portapapeles directamente en la posición donde se encuentra el cursor o selección activa, **sin añadir saltos de línea ni espacios adicionales**.
 - **Botones "Pegar" y "Borrar" Siempre Visibles**: Ambos botones se mantienen permanentemente visibles lado a lado en la barra de instrucciones, sin importar si el cuadro de texto está vacío o lleno.
@@ -31,10 +32,11 @@
 - **Persistencia de Texto**: El guión introducido se guarda de forma persistente en `SharedPreferences` para no perderlo al cerrar o reiniciar la aplicación.
 
 ### 🎨 Pantalla Splash Screen Vistosa y Diálogo "Acerca de"
-- **Apertura Inicial (Splash Screen)**: Pantalla de presentación colorida a toda pantalla (dentro de los límites de la app, respetando la barra de notificaciones) con un fondo degradado vibrante, icono central heroico de audio, nombre de la app, versión actual (`v1.2.7`) y timestamp de compilación en formato `YYYYMMDDHHMM`. Se cierra automáticamente tras 3.0 segundos.
+- **Apertura Inicial (Splash Screen)**: Pantalla de presentación colorida a toda pantalla (dentro de los límites de la app, respetando la barra de notificaciones) con un fondo degradado vibrante, icono central heroico de audio, nombre de la app, versión actual (`v1.2.7.1`) y timestamp de compilación en formato `YYYYMMDDHHMM`. Se cierra automáticamente tras 3.0 segundos.
 - **Sección "Acerca de" en Opciones**: Botón **"Acerca de"** ℹ️ añadido al final de la ventana de *Opciones de Grabación* que abre este cuadro informativo con la versión y fecha/hora exacta de compilación.
 
 ### ⚡ Conversión Local a MP3 (`Mp3Transcoder.kt` + `libandroidlame.so`)
+- **Compatibilidad 16 KB Page Size Alignment**: Configuración de empaquetado nativo `useLegacyPackaging = false` para eliminar advertencias de alineación de páginas de 16 KB en Android 15/16 (API 35+).
 - **Botón Dedicado "Convertir a MP3"**: Ubicado en la tarjeta del reproductor entre los botones *"Guardar"* y *"Enviar a Auphonic.com"*.
 - **Transcodificación On-Device**: Convierte localmente archivos `.m4a` a **MP3 nativo real** (`.mp3`) usando el motor C nativo de **LAME MP3** (`libandroidlame.so`).
 - **Mantenimiento 1:1 de Parámetros**: Extrae la tasa de bits (kbps), la frecuencia de muestreo (Hz) y los canales (Stereo/Mono) del archivo de origen y los aplica exactamente al archivo MP3 generado.
@@ -52,80 +54,39 @@
     - `⚪ Sin recortar`: Mantiene todo el audio recibido.
   - Al confirmar, aplica el recorte, elimina etiquetas ID3/APE sobrantes y guarda el resultado MP3 en **Descargas** (ej. `Grabacion_20250228_153000_procesado.mp3`).
 
-### 🎧 Reproductor Inteligente y Controles Globales de Sistema
-- **Botón Play/Pause Estricto de Sistema**: Icono en la TopBar que envía exclusivamente el evento multimedia del sistema (`android.view.KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE` vía `AudioManager.dispatchMediaKeyEvent`), actuando como el botón físico de unos auriculares sin alterar el reproductor interno.
-- **Conmutación Sin Pausas**: Pestañas para cambiar en tiempo real entre la pista **Original** y la pista **Auphonic (Procesado MP3)** sin perder el punto de reproducción activo.
-
 ---
 
 ## 📜 Historial de Cambios (Changelog)
 
+### 🟢 v1.2.7.1
+- **Persistencia al Rotar Pantalla**: Conservación del texto, selección y cursor del editor de guión al cambiar la orientación del dispositivo mediante `rememberSaveable`.
+- **Solución Compatibilidad 16 KB Page Size**: Configurado `useLegacyPackaging = false` en `packaging { jniLibs }` eliminando la advertencia de alineación de librerías JNI en Android 15/16.
+- **Diseño Ultra-Compacto Responsivo de 1 Línea**: Reducidos tamaños de fuente y truncamiento `Ellipsis` para garantizar que encajen en 1 sola línea:
+  - Ajustes de grabación.
+  - Fuente de entrada seleccionada.
+  - Opción de guardado automático en Descargas.
+  - Fichero de audio seleccionado y su nombre.
+  - Pestañas de audio (*Original* vs *Procesado MP3*).
+  - Botón *Compartir*.
+- **Subida de Versión**: Actualizado a `v1.2.7.1` (`versionCode = 11`).
+
 ### 🟢 v1.2.7
 - **Licencia MIT con Atribución**: Añadido archivo de licencia `LICENSE` reconociendo a **Xabi Otero** como desarrollador principal y a **Gemini** como asistente de IA.
-- **Rediseño Vistoso de Splash Screen**: Fondo degradado a toda pantalla (respetando la barra de estado del teléfono), icono de audio destacado, versión `v1.2.7` y timestamp de compilación `YYYYMMDDHHMM`.
-- **Formato Limpio de Fecha/Hora**: Eliminado el prefijo `"Compilado: "`, dejando únicamente la fecha/hora en formato `YYYYMMDDHHMM`.
-- **Subida de Versión**: Actualizado a `v1.2.7` (`versionCode = 10`).
+- **Rediseño Vistoso de Splash Screen**: Fondo degradado a toda pantalla, icono de audio destacado, versión `v1.2.7` y timestamp `YYYYMMDDHHMM`.
+- **Formato Limpio de Fecha/Hora**: Eliminado el prefijo `"Compilado: "`.
 
 ### 🟢 v1.2.6
 - **Pantalla Splash Screen & "Acerca de"**: Presentación inicial e información en opciones.
-- **Globos Flotantes de Aviso sin Desplazamiento**: Globos redondeados en `Alignment.TopCenter` por encima de la aplicación que avisan a los -20s, -10s, -5s y -2s sin desplazar el guión ni los controles.
-- **Diálogo de Confirmación en Editor**: Confirmación al salir sin guardar (*Guardar y Salir*, *Descartar*, *Cancelar*).
+- **Globos Flotantes de Aviso sin Desplazamiento**: Globos redondeados en `Alignment.TopCenter` por encima de la aplicación.
+- **Diálogo de Confirmación en Editor**: Confirmación al salir sin guardar.
 - **Avisos Sonoros de Tiempo por Auriculares**: Pitidos en auriculares (-20s, -10s, -5s, -2s).
-
-### 🟢 v1.2.5
-- **Pegado Directo en la Posición del Cursor**: Inserción del portapapeles exactamente en el cursor mediante `TextFieldValue` sin agregar saltos de línea ni espacios.
-- **Visibilidad Permanente de Botones**: `"Pegar"` y `"Borrar"` se mantienen siempre visibles juntos sin importar si el texto está vacío.
-
-### 🟢 v1.2.4
-- **Instrucción Abreviada**: Cambio a *"Introduce guión:"* para garantizar espacio máximo a los botones en cualquier densidad de pantalla.
-- **Interfaz Responsiva Multipantalla**: Ajuste de pesos y márgenes compactos para botones.
-
-### 🟢 v1.2.3
-- **Limpieza de Barra Superior**: Eliminación del icono de papelera entre el título y el botón *"Guardar"*.
-
-### 🟢 v1.2.2
-- **Diseño Único en Una Línea**: Título compacto *"Guión / Escaleta"* y botón inferior *"Guardar y Grabar"* ajustados a una sola línea de texto.
-
-### 🟢 v1.2.1
-- **Teleprompter Expandible**: El cuadro del guión se extiende a pantalla completa hasta el borde inferior durante la sesión de grabación.
-
-### 🟢 v1.2.0
-- **Pausa Automática Multimedia**: Pausa del audio general del dispositivo al pulsar grabar sin reanudarse tras finalizar.
-- **Ocultación Dinámica al Grabar**: Ocultación de tarjetas de ajustes y botón de abrir audio local durante la grabación.
-
-### 🟢 v1.1.0
-- **Checkbox de Guardado Automático**: Control persistent para copia directa a Descargas.
-- **Transcodificador MP3 Nativo**: Conversión M4A -> MP3 mediante motor C LAME (`libandroidlame.so`).
-
-### 🟢 v1.0.0
-- **Lanzamiento Inicial**: Grabación M4A/AAC, API Auphonic.com v2, ruteo Bluetooth SCO y reproductor con recortador.
-
----
-
-## 🚀 Instrucciones de Uso
-
-### 1️⃣ Configurar Opciones de Grabación y Avisos de Tiempo
-1. Toca el icono de ecualizador 🎛️ en la barra superior.
-2. Configura los parámetros de audio y pulsa en **"Avisos de tiempo (Auriculares)"** ⏱️ para elegir entre *Sin aviso*, *1 minuto*, *10 minutos* o *Personalizado*.
-3. Pulsa el botón **"Acerca de"** ℹ️ para consultar la versión y la marca de tiempo exacta de compilación.
-
-### 2️⃣ Redactar o Pegar Guión y Grabar
-1. Toca **"Añadir Guión"** o el icono 📝.
-2. Posiciona el cursor donde desees y toca **"Pegar"** 📋 para insertar el contenido del portapapeles.
-3. Si modificas el guión e intentas salir sin guardar, la app te preguntará con un cuadro de diálogo si deseas guardar los cambios.
-4. Presiona **"Guardar y Grabar"** o presione el botón rojo 🎙️ en la pantalla principal.
-5. Durante la grabación, la pantalla del teleprompter ocupará toda la pantalla para facilitar la lectura fluida.
-
-### 3️⃣ Convertir Localmente a MP3 o Procesar con Auphonic.com
-- **Opción A (Conversión Local Rápida a MP3)**: Toca el botón **"Convertir a MP3"** en la tarjeta del reproductor. Se generará y guardará de inmediato en **Descargas** la versión MP3 con el mismo nombre base (ej. `Grabacion_20250228_153000.mp3`).
-- **Opción B (Nivelación y Limpieza Cloud con Auphonic.com)**: Toca **"Enviar a Auphonic.com"**. En la pantalla de ajuste, escucha el resultado, selecciona la opción de recorte (*Cortar al final*, *Cortar al inicio* o *Sin recortar*) y toca **"Aplicar y Guardar MP3"**.
 
 ---
 
 ## 🛠️ Requisitos del Proyecto
 
 - **Android SDK**: Mínimo API 24 (Android 7.0) / Target API 35 (Android 15).
-- **Versión de la App**: v1.2.7 (`versionCode 10`).
+- **Versión de la App**: v1.2.7.1 (`versionCode 11`).
 - **Lenguaje**: Kotlin 2.1.0.
 - **UI Framework**: Jetpack Compose (Material 3).
 - **Herramienta de Construcción**: Gradle 9.6 / AGP 8.7.3 (con Java 17/21).
@@ -139,4 +100,4 @@ Este proyecto está licenciado bajo la **Licencia MIT**.
 - **Desarrollador Principal**: **Xabi Otero**
 - **Asistencia de Desarrollo**: Desarrollado con la colaboración de **Gemini** como asistente de Inteligencia Artificial.
 
-Se permite el libre uso, copia, modificación, distribución, sublicenciamiento y comercialización del software, con la condición de mantener los avisos de copyright y atribución de autoría original. Consulta el archivo **[`LICENSE`](file:///G:/A%20mi%C3%B1a%20unidade/Documentos/Programacion/Android%20Studio/GrabadorparaPrestocast/LICENSE)** para más detalles.
+Consulta el archivo **[`LICENSE`](file:///G:/A%20mi%C3%B1a%20unidade/Documentos/Programacion/Android%20Studio/GrabadorparaPrestocast/LICENSE)** para más detalles.
