@@ -1,4 +1,4 @@
-# 🎙️ Grabador Prestocast (v1.2.7.1)
+# 🎙️ Grabador Prestocast (v1.3.0)
 
 **Grabador Prestocast** es una aplicación nativa para Android desarrollada en Kotlin y Jetpack Compose, diseñada para grabar audio en alta fidelidad (formato `.m4a`/`AAC` nativo o archivos locales importados), transcodificar localmente a **MP3 genuino** mediante el motor C/JNI **LAME MP3**, integrarse con el servicio de postprocesamiento en la nube **Auphonic.com** (nivelación inteligente, reducción de ruido con IA y salida MP3), y proporcionar un sistema de guión / teleprompter para podcasts, boletines y locuciones.
 
@@ -8,6 +8,11 @@
 
 ### 🔴 Grabación de Audio Continua, Bluetooth y Guardado Configurable
 - **Pausa Automática de Reproducción de Medios del Sistema**: Al presionar grabar, la app emite la señal de pausa del sistema (`KEYCODE_MEDIA_PAUSE` y `AUDIOFOCUS_GAIN_TRANSIENT` vía `AudioManager`) para pausar cualquier otra app que esté reproduciendo audio en el móvil (Spotify, podcasts, navegadores, etc.), asegurando que la reproducción **no se reanude** al terminar.
+- **📜 Autodesplazamiento de Teleprompter con Control de Velocidad en Tiempo Real 📜**: Controles integrados justo debajo del temporizador:
+  - **Checkbox sin texto**: Activa o desactiva el desplazamiento automático del guión durante la grabación.
+  - **Slider de velocidad**: Regula la velocidad del autodesplazamiento a todo lo ancho de la pantalla. Cambiar la posición del slider modifica la velocidad instantáneamente en tiempo real.
+  - **Ciclo inteligente de estados**: Comienza al pulsar *Grabar*, se pausa automáticamente al pulsar *Pausa*, se reanuda en la misma posición al pulsar *Reanudar* y se detiene al pulsar *Stop*.
+  - **Persistencia total**: Tanto el estado del Checkbox como el valor del Slider se guardan de forma persistente en `SharedPreferences`.
 - **⏱️ Avisos de Tiempo Sonoros Exclusivos por Auriculares**: Configuración de avisos sonoros que emiten pitidos de frecuencias ascendentes (800 Hz, 1000 Hz, 1200 Hz y 1500 Hz) a los **-20s, -10s, -5s y -2s** antes de alcanzar el tiempo fijado (1 min, 10 min o personalizado). Se reproducen **exclusivamente a través de auriculares** (Bluetooth o cable) para no ser captados por el micrófono ni sonar por el altavoz.
 - **💬 Globos Flotantes de Aviso de Tiempo (Superposición sin Desplazamiento)**: En los mismos momentos de los avisos (-20s, -10s, -5s, -2s), la app despliega un globo flotante redondeado en la parte superior central de la pantalla (`Alignment.TopCenter`), **flotando sobre la aplicación sin desplazar ni un píxel del guión o controles**.
 - **Teleprompter Expandible a Pantalla Completa**: Durante la grabación, el área del guión/teleprompter se expande hacia abajo hasta el borde inferior de la pantalla (`weight(1f)`), permitiendo una lectura cómoda de guiones extensos con desplazamiento vertical.
@@ -32,7 +37,7 @@
 - **Persistencia de Texto**: El guión introducido se guarda de forma persistente en `SharedPreferences` para no perderlo al cerrar o reiniciar la aplicación.
 
 ### 🎨 Pantalla Splash Screen Vistosa y Diálogo "Acerca de"
-- **Apertura Inicial (Splash Screen)**: Pantalla de presentación colorida a toda pantalla (dentro de los límites de la app, respetando la barra de notificaciones) con un fondo degradado vibrante, icono central heroico de audio, nombre de la app, versión actual (`v1.2.7.1`) y timestamp de compilación en formato `YYYYMMDDHHMM`. Se cierra automáticamente tras 3.0 segundos.
+- **Apertura Inicial (Splash Screen)**: Pantalla de presentación colorida a toda pantalla (dentro de los límites de la app, respetando la barra de notificaciones) con un fondo degradado vibrante, icono central heroico de audio, nombre de la app, versión actual (`v1.3.0`) y timestamp de compilación en formato `YYYYMMDDHHMM`. Se cierra automáticamente tras 3.0 segundos.
 - **Sección "Acerca de" en Opciones**: Botón **"Acerca de"** ℹ️ añadido al final de la ventana de *Opciones de Grabación* que abre este cuadro informativo con la versión y fecha/hora exacta de compilación.
 
 ### ⚡ Conversión Local a MP3 (`Mp3Transcoder.kt` + `libandroidlame.so`)
@@ -58,17 +63,18 @@
 
 ## 📜 Historial de Cambios (Changelog)
 
+### 🟢 v1.3.0
+- **Autodesplazamiento de Teleprompter con Control de Velocidad**:
+  - Checkbox sin texto y Slider de velocidad integrados entre el temporizador y el cuadro de texto.
+  - Cambio de velocidad en tiempo real mientras el texto se desplaza.
+  - Gestión limpia de estados: se activa al grabar, se pausa al pausar la grabación, se reanuda en la misma posición al despausar y se detiene al finalizar.
+  - Persistencia total de la configuración en `SharedPreferences`.
+- **Subida de Versión**: Actualizado a `v1.3.0` (`versionCode = 12`).
+
 ### 🟢 v1.2.7.1
 - **Persistencia al Rotar Pantalla**: Conservación del texto, selección y cursor del editor de guión al cambiar la orientación del dispositivo mediante `rememberSaveable`.
 - **Solución Compatibilidad 16 KB Page Size**: Configurado `useLegacyPackaging = false` en `packaging { jniLibs }` eliminando la advertencia de alineación de librerías JNI en Android 15/16.
-- **Diseño Ultra-Compacto Responsivo de 1 Línea**: Reducidos tamaños de fuente y truncamiento `Ellipsis` para garantizar que encajen en 1 sola línea:
-  - Ajustes de grabación.
-  - Fuente de entrada seleccionada.
-  - Opción de guardado automático en Descargas.
-  - Fichero de audio seleccionado y su nombre.
-  - Pestañas de audio (*Original* vs *Procesado MP3*).
-  - Botón *Compartir*.
-- **Subida de Versión**: Actualizado a `v1.2.7.1` (`versionCode = 11`).
+- **Diseño Ultra-Compacto Responsivo de 1 Línea**: Reducidos tamaños de fuente y truncamiento `Ellipsis` para garantizar que encajen en 1 sola línea.
 
 ### 🟢 v1.2.7
 - **Licencia MIT con Atribución**: Añadido archivo de licencia `LICENSE` reconociendo a **Xabi Otero** como desarrollador principal y a **Gemini** como asistente de IA.
@@ -86,7 +92,7 @@
 ## 🛠️ Requisitos del Proyecto
 
 - **Android SDK**: Mínimo API 24 (Android 7.0) / Target API 35 (Android 15).
-- **Versión de la App**: v1.2.7.1 (`versionCode 11`).
+- **Versión de la App**: v1.3.0 (`versionCode 12`).
 - **Lenguaje**: Kotlin 2.1.0.
 - **UI Framework**: Jetpack Compose (Material 3).
 - **Herramienta de Construcción**: Gradle 9.6 / AGP 8.7.3 (con Java 17/21).

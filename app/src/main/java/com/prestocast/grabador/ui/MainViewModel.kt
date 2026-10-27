@@ -91,6 +91,8 @@ data class UiState(
     val autoSaveOriginalToDownloads: Boolean = true,
     val timeWarningMode: Int = 0, // 0 = Sin aviso, 1 = 1 min, 2 = 10 min, 3 = Personalizado
     val timeWarningCustomMins: Int = 5,
+    val isAutoScrollEnabled: Boolean = false,
+    val autoScrollSpeed: Float = 5f,
     val recBitrateKbps: Int = 128,
     val recChannels: Int = 2,
     val recSampleRateHz: Int = 44100,
@@ -160,7 +162,9 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             teleprompterText = prefs.getTeleprompterText(),
             autoSaveOriginalToDownloads = prefs.getAutoSaveOriginalToDownloads(),
             timeWarningMode = prefs.getTimeWarningMode(),
-            timeWarningCustomMins = prefs.getTimeWarningCustomMinutes()
+            timeWarningCustomMins = prefs.getTimeWarningCustomMinutes(),
+            isAutoScrollEnabled = prefs.getAutoScrollEnabled(),
+            autoScrollSpeed = prefs.getAutoScrollSpeed()
         )
 
         if (apiKey.isNotBlank()) {
@@ -171,6 +175,16 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     fun updateAutoSaveOriginalToDownloads(enabled: Boolean) {
         prefs.saveAutoSaveOriginalToDownloads(enabled)
         _uiState.value = _uiState.value.copy(autoSaveOriginalToDownloads = enabled)
+    }
+
+    fun updateAutoScrollEnabled(enabled: Boolean) {
+        prefs.saveAutoScrollEnabled(enabled)
+        _uiState.value = _uiState.value.copy(isAutoScrollEnabled = enabled)
+    }
+
+    fun updateAutoScrollSpeed(speed: Float) {
+        prefs.saveAutoScrollSpeed(speed)
+        _uiState.value = _uiState.value.copy(autoScrollSpeed = speed)
     }
 
     fun saveTimeWarningSettings(mode: Int, customMins: Int) {
@@ -429,7 +443,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         totalPausedDurationMs = 0L
         pauseStartTimeMs = 0L
 
-        // Usar strictly la fuente seleccionada manualmente por el usuario en las opciones
+        // Usar estrictamente la fuente seleccionada manualmente por el usuario en las opciones
         val success = recorder.startRecording(
             outputFile = file,
             bitRateKbps = _uiState.value.recBitrateKbps,

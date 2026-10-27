@@ -448,9 +448,63 @@ fun MainScreen(
                             }
                         }
 
+                        // Controles de Auto-desplazamiento (Solo visibles exclusivamente en la pantalla de grabación / en curso)
+                        AnimatedVisibility(visible = !isIdle) {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 4.dp, vertical = 2.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(6.dp)
+                            ) {
+                                Checkbox(
+                                    checked = uiState.isAutoScrollEnabled,
+                                    onCheckedChange = { viewModel.updateAutoScrollEnabled(it) },
+                                    modifier = Modifier.size(24.dp)
+                                )
+
+                                Slider(
+                                    value = uiState.autoScrollSpeed,
+                                    onValueChange = { viewModel.updateAutoScrollSpeed(it) },
+                                    valueRange = 1f..20f,
+                                    enabled = uiState.isAutoScrollEnabled,
+                                    modifier = Modifier.weight(1f)
+                                )
+                            }
+                        }
+
                         // Teleprompter Script Display when Recording/Paused (Se expande hasta abajo del todo)
                         if (!isIdle && uiState.teleprompterText.isNotBlank()) {
                             HorizontalDivider()
+
+                            val teleprompterScrollState = rememberScrollState()
+
+                            // Si se inicia la grabación desde cero, reseteamos el scroll al principio
+                            LaunchedEffect(uiState.recordingStatus) {
+                                if (uiState.recordingStatus == RecordingStatus.Recording && uiState.recordingTimeSeconds <= 1L) {
+                                    teleprompterScrollState.scrollTo(0)
+                                }
+                            }
+
+                            // Bucle continuo de autodesplazamiento conducido por recordingStatus, isAutoScrollEnabled y autoScrollSpeed
+                            LaunchedEffect(
+                                uiState.recordingStatus,
+                                uiState.isAutoScrollEnabled,
+                                uiState.autoScrollSpeed
+                            ) {
+                                if (uiState.recordingStatus == RecordingStatus.Recording && uiState.isAutoScrollEnabled) {
+                                    while (uiState.recordingStatus == RecordingStatus.Recording && uiState.isAutoScrollEnabled) {
+                                        delay(40) // 25 FPS
+                                        val step = (uiState.autoScrollSpeed * 0.8f).toInt().coerceAtLeast(1)
+                                        val nextPos = (teleprompterScrollState.value + step).coerceAtMost(teleprompterScrollState.maxValue)
+                                        teleprompterScrollState.scrollTo(nextPos)
+                                        if (teleprompterScrollState.value >= teleprompterScrollState.maxValue) {
+                                            break
+                                        }
+                                    }
+                                }
+                            }
+
                             Column(
                                 modifier = Modifier
                                     .fillMaxWidth()
@@ -472,7 +526,7 @@ fun MainScreen(
                                     modifier = Modifier
                                         .fillMaxWidth()
                                         .weight(1f)
-                                        .verticalScroll(rememberScrollState())
+                                        .verticalScroll(teleprompterScrollState)
                                 ) {
                                     Text(
                                         text = uiState.teleprompterText,
@@ -1079,7 +1133,7 @@ fun SplashScreenContent() {
                     shadowElevation = 4.dp
                 ) {
                     Text(
-                        text = "🎙️ Audio de Alta Fidelidad & Teleprompter",
+                        text = "🎙️ Audio HI-FI & Teleprompter",
                         style = MaterialTheme.typography.bodyLarge,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.primary,
