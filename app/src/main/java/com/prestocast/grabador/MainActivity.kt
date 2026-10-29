@@ -10,6 +10,10 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.ui.Modifier
 import androidx.core.content.ContextCompat
 import com.prestocast.grabador.ui.MainScreen
 import com.prestocast.grabador.ui.MainViewModel
@@ -35,18 +39,23 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             GrabadorTheme {
-                val hasRecordPermission = ContextCompat.checkSelfPermission(
-                    this,
-                    Manifest.permission.RECORD_AUDIO
-                ) == PackageManager.PERMISSION_GRANTED
+                Surface(
+                    modifier = Modifier.fillMaxSize(),
+                    color = MaterialTheme.colorScheme.background
+                ) {
+                    val hasRecordPermission = ContextCompat.checkSelfPermission(
+                        this,
+                        Manifest.permission.RECORD_AUDIO
+                    ) == PackageManager.PERMISSION_GRANTED
 
-                MainScreen(
-                    viewModel = viewModel,
-                    hasRecordPermission = hasRecordPermission,
-                    onRequestPermission = {
-                        requestPermissionLauncher.launch(Manifest.permission.RECORD_AUDIO)
-                    }
-                )
+                    MainScreen(
+                        viewModel = viewModel,
+                        hasRecordPermission = hasRecordPermission,
+                        onRequestPermission = {
+                            requestPermissionLauncher.launch(Manifest.permission.RECORD_AUDIO)
+                        }
+                    )
+                }
             }
         }
     }

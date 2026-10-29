@@ -43,6 +43,7 @@ import java.util.Locale
 
 sealed class RecordingStatus {
     object Idle : RecordingStatus()
+    object Countdown : RecordingStatus()
     object Recording : RecordingStatus()
     object Paused : RecordingStatus()
 }
@@ -68,6 +69,7 @@ data class UiState(
     val showSplashScreen: Boolean = true,
     val showAboutDialog: Boolean = false,
     val recordingStatus: RecordingStatus = RecordingStatus.Idle,
+    val countdownSecondsRemaining: Int = 3,
     val recordingTimeSeconds: Long = 0L,
     val currentAmplitude: Int = 0,
     val originalAudioFile: File? = null,
@@ -124,6 +126,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     val uiState: StateFlow<UiState> = _uiState.asStateFlow()
 
     private var timerJob: Job? = null
+    private var countdownJob: Job? = null
     private var bannerJob: Job? = null
     private var playbackJob: Job? = null
     private var activeRecordingFile: File? = null
@@ -430,6 +433,37 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         stopPlayback()
         pauseSystemMediaPlayback()
 
+        if (_uiState.value.recordingStatus is RecordingStatus.Countdown ||
+            _uiState.value.recordingStatus is RecordingStatus.Recording) {
+            return
+        }
+
+        countdownJob?.cancel()
+        countdownJob = viewModelScope.launch {
+            _uiState.value = _uiState.value.copy(
+                recordingStatus = RecordingStatus.Countdown,
+                countdownSecondsRemaining = 3
+            )
+
+            // Segundo 1 de aviso (Faltan 2s de tonos): Pitido 800 Hz
+            viewModelScope.launch { TimeWarningManager.playBeep(800) }
+            delay(1000)
+
+            _uiState.value = _uiState.value.copy(countdownSecondsRemaining = 2)
+            // Segundo 2 de aviso (Falta 1s de tonos): Pitido 1200 Hz
+            viewModelScope.launch { TimeWarningManager.playBeep(1200) }
+            delay(1000)
+
+            _uiState.value = _uiState.value.copy(countdownSecondsRemaining = 1)
+            // Segundo 3 de margen extra de silencio antes de iniciar la grabación real
+            delay(1000)
+
+            // Inicio Real de la Grabación tras la cuenta atrás previa
+            performActualStartRecording()
+        }
+    }
+
+    private fun performActualStartRecording() {
         // Iniciar servicio en primer plano con WakeLock para asegurar grabación con pantalla apagada
         AudioRecordingService.startService(context)
 
@@ -468,6 +502,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             startTimer()
         } else {
             AudioRecordingService.stopService(context)
+            _uiState.value = _uiState.value.copy(recordingStatus = RecordingStatus.Idle)
             showToast("Error al iniciar la grabación")
         }
     }
@@ -490,6 +525,8 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun stopRecording() {
+        countdownJob?.cancel()
+        countdownJob = null
         stopTimer()
         bannerJob?.cancel()
         val recordedFile = recorder.stopRecording()

@@ -350,24 +350,45 @@ fun MainScreen(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             // Timer Display
-                            val seconds = uiState.recordingTimeSeconds
-                            val formattedTime = formatTime(seconds * 1000L)
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                if (uiState.recordingStatus == RecordingStatus.Recording) {
-                                    Box(
-                                        modifier = Modifier
-                                            .size(12.dp)
-                                            .clip(CircleShape)
-                                            .background(RecordingRed)
-                                    )
-                                    Spacer(Modifier.width(8.dp))
+                            when (uiState.recordingStatus) {
+                                RecordingStatus.Countdown -> {
+                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                        Icon(
+                                            Icons.Default.AccessAlarm,
+                                            contentDescription = null,
+                                            tint = MaterialTheme.colorScheme.primary,
+                                            modifier = Modifier.size(24.dp)
+                                        )
+                                        Spacer(Modifier.width(8.dp))
+                                        Text(
+                                            text = "Iniciando: ${uiState.countdownSecondsRemaining}s",
+                                            fontSize = 24.sp,
+                                            fontWeight = FontWeight.Bold,
+                                            color = MaterialTheme.colorScheme.primary
+                                        )
+                                    }
                                 }
-                                Text(
-                                    text = formattedTime,
-                                    fontSize = 32.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    color = if (uiState.recordingStatus == RecordingStatus.Recording) RecordingRed else MaterialTheme.colorScheme.onSurface
-                                )
+                                else -> {
+                                    val seconds = uiState.recordingTimeSeconds
+                                    val formattedTime = formatTime(seconds * 1000L)
+                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                        if (uiState.recordingStatus == RecordingStatus.Recording) {
+                                            Box(
+                                                modifier = Modifier
+                                                    .size(12.dp)
+                                                    .clip(CircleShape)
+                                                    .background(RecordingRed)
+                                            )
+                                            Spacer(Modifier.width(8.dp))
+                                        }
+                                        Text(
+                                            text = formattedTime,
+                                            fontSize = 32.sp,
+                                            fontWeight = FontWeight.Bold,
+                                            color = if (uiState.recordingStatus == RecordingStatus.Recording) RecordingRed else MaterialTheme.colorScheme.onSurface
+                                        )
+                                    }
+                                }
                             }
 
                             // Recording Buttons (Compact)
@@ -388,6 +409,20 @@ fun MainScreen(
                                             Icon(
                                                 Icons.Default.Mic,
                                                 contentDescription = "Grabar",
+                                                modifier = Modifier.size(26.dp)
+                                            )
+                                        }
+                                    }
+                                    RecordingStatus.Countdown -> {
+                                        FloatingActionButton(
+                                            onClick = { viewModel.stopRecording() },
+                                            containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                                            contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
+                                            modifier = Modifier.size(52.dp)
+                                        ) {
+                                            Icon(
+                                                Icons.Default.Close,
+                                                contentDescription = "Cancelar Pre-grabación",
                                                 modifier = Modifier.size(26.dp)
                                             )
                                         }
@@ -1133,7 +1168,7 @@ fun SplashScreenContent() {
                     shadowElevation = 4.dp
                 ) {
                     Text(
-                        text = "🎙️ Audio HI-FI & Teleprompter",
+                        text = "🎙️ Audio de Alta Fidelidad & Teleprompter",
                         style = MaterialTheme.typography.bodyLarge,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.primary,
