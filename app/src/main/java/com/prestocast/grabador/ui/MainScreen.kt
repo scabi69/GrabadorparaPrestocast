@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.Intent
 import android.media.AudioManager
 import android.net.Uri
+import android.os.SystemClock
 import android.view.KeyEvent
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
@@ -1168,7 +1169,7 @@ fun SplashScreenContent() {
                     shadowElevation = 4.dp
                 ) {
                     Text(
-                        text = "🎙️ Audio de Alta Fidelidad & Teleprompter",
+                        text = "🎙️ Audio HI-FI & Teleprompter",
                         style = MaterialTheme.typography.bodyLarge,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.primary,
@@ -1249,7 +1250,7 @@ fun AboutScreenContent(
             )
 
             Text(
-                text = "Grabación de Audio & Teleprompter",
+                text = "Audio HI-FI & Teleprompter",
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Center,
@@ -2624,8 +2625,10 @@ private fun sendSystemMediaPlayPause(context: Context) {
     try {
         val audioManager = context.getSystemService(Context.AUDIO_SERVICE) as? AudioManager
         if (audioManager != null) {
-            val down = KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_MEDIA_PAUSE)
-            val up = KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_MEDIA_PAUSE)
+            val keyCode = if (audioManager.isMusicActive) KeyEvent.KEYCODE_MEDIA_PAUSE else KeyEvent.KEYCODE_MEDIA_PLAY
+            val eventTime = SystemClock.uptimeMillis()
+            val down = KeyEvent(eventTime, eventTime, KeyEvent.ACTION_DOWN, keyCode, 0)
+            val up = KeyEvent(eventTime, eventTime, KeyEvent.ACTION_UP, keyCode, 0)
             audioManager.dispatchMediaKeyEvent(down)
             audioManager.dispatchMediaKeyEvent(up)
         }

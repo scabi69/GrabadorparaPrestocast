@@ -9,6 +9,7 @@ import android.media.AudioManager
 import android.net.Uri
 import android.os.Build
 import android.os.Environment
+import android.os.SystemClock
 import android.provider.MediaStore
 import android.provider.OpenableColumns
 import android.view.KeyEvent
@@ -404,8 +405,17 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         try {
             val audioManager = context.getSystemService(Context.AUDIO_SERVICE) as? AudioManager
             if (audioManager != null) {
-                val down = KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_MEDIA_PAUSE)
-                val up = KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_MEDIA_PAUSE)
+                // Solo pausar si realmente hay reproducción multimedia activa en el sistema.
+                // Si no hay nada reproduciéndose, emitir KEYCODE_MEDIA_PAUSE despierta a la última
+                // aplicación multimedia (Media Resumption) o conmuta estado (toggle), provocando
+                // que comience a reproducir música cuando no hay auriculares bluetooth conectados.
+                if (!audioManager.isMusicActive) {
+                    return
+                }
+
+                val eventTime = SystemClock.uptimeMillis()
+                val down = KeyEvent(eventTime, eventTime, KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_MEDIA_PAUSE, 0)
+                val up = KeyEvent(eventTime, eventTime, KeyEvent.ACTION_UP, KeyEvent.KEYCODE_MEDIA_PAUSE, 0)
                 audioManager.dispatchMediaKeyEvent(down)
                 audioManager.dispatchMediaKeyEvent(up)
 

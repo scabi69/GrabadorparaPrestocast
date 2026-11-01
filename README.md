@@ -1,4 +1,4 @@
-# 🎙️ Grabador Prestocast (v1.3.5)
+# 🎙️ Grabador Prestocast (v1.3.5.1)
 
 **Grabador Prestocast** es una aplicación nativa para Android desarrollada en Kotlin y Jetpack Compose, diseñada para grabar audio en alta fidelidad (formato `.m4a`/`AAC` nativo o archivos locales importados), transcodificar localmente a **MP3 genuino** mediante el motor C/JNI **LAME MP3**, integrarse con el servicio de postprocesamiento en la nube **Auphonic.com** (nivelación inteligente, reducción de ruido con IA y salida MP3), y proporcionar un sistema de guión / teleprompter para podcasts, boletines y locuciones.
 
@@ -17,7 +17,7 @@
   - **Exclusividad en pantalla de grabación**: Ocultos en reposo (pantalla principal) y visibles únicamente durante la grabación/pausa.
   - **Ciclo inteligente de estados**: Comienza al pulsar *Grabar*, se pausa automáticamente al pulsar *Pausa*, se reanuda en la misma posición al pulsar *Reanudar* y se detiene al pulsar *Stop*.
   - **Persistencia total**: Tanto el estado del Checkbox como el valor del Slider se guardan de forma persistente en `SharedPreferences`.
-- **Pausa Automática de Reproducción de Medios del Sistema**: Al presionar grabar, la app emite la señal de pausa del sistema (`KEYCODE_MEDIA_PAUSE` y `AUDIOFOCUS_GAIN_TRANSIENT` vía `AudioManager`) para pausar cualquier otra app que esté reproduciendo audio en el móvil (Spotify, podcasts, navegadores, etc.), asegurando que la reproducción **no se reanude** al terminar.
+- **Pausa Automática de Reproducción de Medios del Sistema**: Al presionar grabar, la app verifica de forma inteligente si hay reproducción activa (`isMusicActive`) y, solo si la hay, emite la señal de pausa del sistema (`KEYCODE_MEDIA_PAUSE` y `AUDIOFOCUS_GAIN_TRANSIENT` vía `AudioManager`) para pausar cualquier otra app que esté reproduciendo audio en el móvil (Spotify, podcasts, navegadores, etc.), asegurando que la reproducción **no se reanude** y evitando que el sistema inicie reproducciones no deseadas cuando no hay auriculares conectados.
 - **⏱️ Avisos de Tiempo Sonoros Exclusivos por Auriculares**: Configuración de avisos sonoros que emiten pitidos de frecuencias ascendentes (800 Hz, 1000 Hz, 1200 Hz y 1500 Hz) a los **-20s, -10s, -5s y -2s** antes de alcanzar el tiempo fijado (1 min, 10 min o personalizado). Se reproducen **exclusivamente a través de auriculares** (Bluetooth o cable) para no ser captados por el micrófono ni sonar por el altavoz.
 - **💬 Globos Flotantes de Aviso de Tiempo (Superposición sin Desplazamiento)**: En los mismos momentos de los avisos (-20s, -10s, -5s, -2s), la app despliega un globo flotante redondeado en la parte superior central de la pantalla (`Alignment.TopCenter`), **flotando sobre la aplicación sin desplazar ni un píxel del guión o controles**.
 - **Teleprompter Expandible a Pantalla Completa**: Durante la grabación, el área del guión/teleprompter se expande hacia abajo hasta el borde inferior de la pantalla (`weight(1f)`), permitiendo una lectura cómoda de guiones extensos con desplazamiento vertical.
@@ -42,7 +42,7 @@
 - **Persistencia de Texto**: El guión introducido se guarda de forma persistente en `SharedPreferences` para no perderlo al cerrar o reiniciar la aplicación.
 
 ### 🎨 Pantalla Splash Screen Vistosa y Diálogo "Acerca de"
-- **Apertura Inicial (Splash Screen)**: Pantalla de presentación colorida a toda pantalla (dentro de los límites de la app, respetando la barra de notificaciones) con un fondo degradado vibrante, icono central heroico de audio, nombre de la app, versión actual (`v1.3.5`) y timestamp de compilación en formato `YYYYMMDDHHMM`. Se cierra automáticamente tras 3.0 segundos.
+- **Apertura Inicial (Splash Screen)**: Pantalla de presentación colorida a toda pantalla (dentro de los límites de la app, respetando la barra de notificaciones) con un fondo degradado vibrante, icono central heroico de audio, nombre de la app, versión actual (`v1.3.5.1`) y timestamp de compilación en formato `YYYYMMDDHHMM`. Se cierra automáticamente tras 3.0 segundos.
 - **Sección "Acerca de" en Opciones**: Botón **"Acerca de"** ℹ️ añadido al final de la ventana de *Opciones de Grabación* que abre este cuadro informativo con la versión y fecha/hora exacta de compilación.
 
 ### ⚡ Conversión Local a MP3 (`Mp3Transcoder.kt` + `libandroidlame.so`)
@@ -67,6 +67,10 @@
 ---
 
 ## 📜 Historial de Cambios (Changelog)
+
+### 🟢 v1.3.5.1
+- **Corrección de Pausa de Medios sin Auriculares Bluetooth**: Comprobación estricta de reproducción multimedia activa en el sistema (`audioManager.isMusicActive`) antes de enviar comandos de pausa al comenzar a grabar. Esto evita que, al no tener auriculares bluetooth conectados y sin nada reproduciéndose, el sistema active involuntariamente la reproducción de música o podcasts de fondo mediante *Media Resumption*.
+- **Subida de Versión**: Actualizado a `v1.3.5.1` (`versionCode = 14`).
 
 ### 🟢 v1.3.5
 - **Cuenta Atrás Previa e Inicio Programado**: Pausa de 3 segundos al pulsar grabar (2s de avisos sonoros de tonos ascendentes + 1s de margen de silencio) antes del inicio real de la grabación de audio y del autodesplazamiento del teleprompter.
@@ -103,7 +107,7 @@
 ## 🛠️ Requisitos del Proyecto
 
 - **Android SDK**: Mínimo API 24 (Android 7.0) / Target API 35 (Android 15).
-- **Versión de la App**: v1.3.5 (`versionCode 13`).
+- **Versión de la App**: v1.3.5.1 (`versionCode 14`).
 - **Lenguaje**: Kotlin 2.1.0.
 - **UI Framework**: Jetpack Compose (Material 3).
 - **Herramienta de Construcción**: Gradle 9.6 / AGP 8.7.3 (con Java 17/21).

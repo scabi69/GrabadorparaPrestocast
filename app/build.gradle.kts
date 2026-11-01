@@ -9,6 +9,7 @@ plugins {
 }
 
 val buildTimestamp: String = SimpleDateFormat("yyyyMMddHHmm", Locale.US).format(Date())
+val appVersionName = "1.3.5.1"
 
 android {
     namespace = "com.prestocast.grabador"
@@ -18,8 +19,8 @@ android {
         applicationId = "com.prestocast.grabador"
         minSdk = 24
         targetSdk = 35
-        versionCode = 12
-        versionName = "1.3.0"
+        versionCode = 14
+        versionName = appVersionName
 
         buildConfigField("String", "BUILD_TIMESTAMP", "\"$buildTimestamp\"")
 
@@ -73,4 +74,21 @@ dependencies {
     }
 
     debugImplementation(libs.androidx.ui.tooling)
+}
+
+// Copia automática de la APK compilada con el formato "Grabador.Prestocast.<version>.apk"
+tasks.matching { it.name.startsWith("assemble") }.configureEach {
+    doLast {
+        val customName = "Grabador.Prestocast.$appVersionName.apk"
+        val apkOutputs = file("build/outputs/apk")
+        if (apkOutputs.exists()) {
+            apkOutputs.walkTopDown().filter { it.extension == "apk" && !it.name.startsWith("Grabador.Prestocast") }.forEach { apk ->
+                val rootCopy = file("${rootProject.projectDir}/$customName")
+                val localCopy = file("${apk.parent}/$customName")
+                apk.copyTo(rootCopy, overwrite = true)
+                apk.copyTo(localCopy, overwrite = true)
+                println("APK copiada con éxito: ${rootCopy.absolutePath}")
+            }
+        }
+    }
 }
