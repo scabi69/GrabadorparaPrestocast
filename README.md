@@ -1,4 +1,4 @@
-# 🎙️ Grabador Prestocast (v1.3.5.1)
+# 🎙️ Grabador Prestocast (v1.3.5.3)
 
 **Grabador Prestocast** es una aplicación nativa para Android desarrollada en Kotlin y Jetpack Compose, diseñada para grabar audio en alta fidelidad (formato `.m4a`/`AAC` nativo o archivos locales importados), transcodificar localmente a **MP3 genuino** mediante el motor C/JNI **LAME MP3**, integrarse con el servicio de postprocesamiento en la nube **Auphonic.com** (nivelación inteligente, reducción de ruido con IA y salida MP3), y proporcionar un sistema de guión / teleprompter para podcasts, boletines y locuciones.
 
@@ -8,7 +8,7 @@
 
 ### 🔴 Grabación de Audio Continua, Bluetooth y Guardado Configurable
 - **⏱️ Cuenta Atrás Previa e Inicio Programado (3 Segundos)**: Al pulsar *Grabar* o *Guardar y Grabar*, la app activa una secuencia previa de 3 segundos antes de iniciar el audio:
-  - **Primeros 2 segundos**: Reproducción de avisos sonoros de tonos ascendentes (800 Hz y 1200 Hz).
+  - **Primeros 2 segundos**: Reproducción de avisos sonoros de tonos ascendentes (1200 Hz y 1800 Hz).
   - **Tercer segundo**: Margen extra de silencio total para no captar ningún pitido en el micrófono.
   - Al completar la secuencia, se inicia la grabación de audio real y el autodesplazamiento del teleprompter.
 - **📜 Autodesplazamiento de Teleprompter con Control de Velocidad en Tiempo Real 📜**: Controles integrados sobre el teleprompter en la pantalla de grabación:
@@ -33,6 +33,7 @@
 - **Resaltado Visual en Desplegables**: En todos los desplegables de configuración, la opción elegida actualmente aparece resaltada con **texto en negrita**, **icono de verificación ✔️** y **fondo coloreado**.
 
 ### 📜 Editor de Guión / Escaleta e Integración Avanzada de Portapapeles
+- **Preservación de Cursor y Texto con Teclado en Pantalla**: El editor mantiene visible y centrado el cursor en todo momento cuando se abre el teclado y el cuadro de edición se reduce de tamaño, evitando que el texto se desplace o el cursor se pierda.
 - **Persistencia en Rotación de Pantalla 🔄**: El contenido del guión, posición del cursor y selecciones se conservan intactos al rotar la pantalla del móvil mediante `rememberSaveable(stateSaver = TextFieldValue.Saver)`.
 - **Diálogo de Confirmación de Cambios sin Guardar ⚠️**: Al intentar salir del editor sin haber guardado los cambios realizados, la app muestra un cuadro de diálogo interactivo con las opciones *"Guardar y Salir"*, *"Descartar"* o *"Cancelar"*.
 - **Inserción en la Posición Exacta del Cursor 📋**: El botón **"Pegar"** utiliza `TextFieldValue` para insertar el texto del portapapeles directamente en la posición donde se encuentra el cursor o selección activa, **sin añadir saltos de línea ni espacios adicionales**.
@@ -42,7 +43,7 @@
 - **Persistencia de Texto**: El guión introducido se guarda de forma persistente en `SharedPreferences` para no perderlo al cerrar o reiniciar la aplicación.
 
 ### 🎨 Pantalla Splash Screen Vistosa y Diálogo "Acerca de"
-- **Apertura Inicial (Splash Screen)**: Pantalla de presentación colorida a toda pantalla (dentro de los límites de la app, respetando la barra de notificaciones) con un fondo degradado vibrante, icono central heroico de audio, nombre de la app, versión actual (`v1.3.5.1`) y timestamp de compilación en formato `YYYYMMDDHHMM`. Se cierra automáticamente tras 3.0 segundos.
+- **Apertura Inicial (Splash Screen)**: Pantalla de presentación colorida a toda pantalla (dentro de los límites de la app, respetando la barra de notificaciones) con un fondo degradado vibrante, icono central heroico de audio, nombre de la app, versión actual (`v1.3.5.3`) y timestamp de compilación en formato `YYYYMMDDHHMM`. Se cierra automáticamente tras 2.0 segundos.
 - **Sección "Acerca de" en Opciones**: Botón **"Acerca de"** ℹ️ añadido al final de la ventana de *Opciones de Grabación* que abre este cuadro informativo con la versión y fecha/hora exacta de compilación.
 
 ### ⚡ Conversión Local a MP3 (`Mp3Transcoder.kt` + `libandroidlame.so`)
@@ -67,6 +68,18 @@
 ---
 
 ## 📜 Historial de Cambios (Changelog)
+
+### 🟢 v1.3.5.3
+- **Duración del Splash Screen Ajustada**: Tiempo de visualización de la pantalla de bienvenida reducido a 2.0 segundos (2000 ms) para un acceso más ágil.
+- **Preservación del Cursor y Visibilidad en Editor de Guión**: Solucionado el problema por el cual al pulsar sobre el texto para editar y desplegarse el teclado en el móvil, el texto se desplazaba y la posición del cursor se perdía fuera de la vista. Se configuró `android:windowSoftInputMode="adjustResize"` en `AndroidManifest.xml` y se implementó un `ScrollState` dedicado con `BringIntoViewRequester` y seguimiento de los insets del teclado (`WindowInsets.ime`), asegurando que la posición del cursor permanezca visible y centrada en pantalla al encogerse el cuadro de edición.
+- **Subida de Versión**: Actualizado a `v1.3.5.3` (`versionCode = 16`).
+
+### 🟢 v1.3.5.2
+- **Escala de Velocidad del Teleprompter Ajustada**: Reducida la escala a la mitad para que la velocidad máxima (100% del slider) equivalga a la que anteriormente correspondía al 50%, permitiendo un ajuste fino y una lectura mucho más cómoda y pausada.
+- **Tonos de Pre-grabación Optimizados**: Frecuencias de cuenta atrás elevadas a 1200 Hz y 1800 Hz para mayor claridad sonora.
+- **Pausa de 1s en Autodesplazamiento del Teleprompter**: El texto ya no comienza a desplazarse inmediatamente en el segundo 0:00, sino tras 1 segundo de cortesía desde el inicio de la grabación.
+- **Pantalla Activa Automática durante Grabación con Guión**: Activado `FLAG_KEEP_SCREEN_ON` exclusivamente mientras se graba con un guión que tiene texto, evitando el apagado por inactividad pero permitiendo el bloqueo manual por parte del usuario.
+- **Subida de Versión**: Actualizado a `v1.3.5.2` (`versionCode = 15`).
 
 ### 🟢 v1.3.5.1
 - **Corrección de Pausa de Medios sin Auriculares Bluetooth**: Comprobación estricta de reproducción multimedia activa en el sistema (`audioManager.isMusicActive`) antes de enviar comandos de pausa al comenzar a grabar. Esto evita que, al no tener auriculares bluetooth conectados y sin nada reproduciéndose, el sistema active involuntariamente la reproducción de música o podcasts de fondo mediante *Media Resumption*.
@@ -107,7 +120,7 @@
 ## 🛠️ Requisitos del Proyecto
 
 - **Android SDK**: Mínimo API 24 (Android 7.0) / Target API 35 (Android 15).
-- **Versión de la App**: v1.3.5.1 (`versionCode 14`).
+- **Versión de la App**: v1.3.5.3 (`versionCode 16`).
 - **Lenguaje**: Kotlin 2.1.0.
 - **UI Framework**: Jetpack Compose (Material 3).
 - **Herramienta de Construcción**: Gradle 9.6 / AGP 8.7.3 (con Java 17/21).

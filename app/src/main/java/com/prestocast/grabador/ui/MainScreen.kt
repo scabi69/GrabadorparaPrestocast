@@ -1,22 +1,35 @@
 package com.prestocast.grabador.ui
 
+import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.media.AudioManager
 import android.net.Uri
 import android.os.SystemClock
 import android.view.KeyEvent
+import android.view.WindowManager
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.*
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.relocation.BringIntoViewRequester
+import androidx.compose.foundation.relocation.bringIntoViewRequester
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.*
@@ -68,7 +81,22 @@ fun MainScreen(
     val scrollState = rememberScrollState()
     val coroutineScope = rememberCoroutineScope()
 
-    // Splash Screen vistosa a toda pantalla dentro del espacio de la app (se cierra sola tras 3.0s)
+    // Mantener la pantalla encendida automáticamente solo mientras se esté grabando y haya guión con contenido
+    val isRecordingWithScript = (uiState.recordingStatus == RecordingStatus.Recording || uiState.recordingStatus == RecordingStatus.Countdown) &&
+            uiState.teleprompterText.isNotBlank()
+    DisposableEffect(isRecordingWithScript) {
+        val window = (context as? Activity)?.window
+        if (isRecordingWithScript) {
+            window?.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+        } else {
+            window?.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+        }
+        onDispose {
+            window?.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+        }
+    }
+
+    // Splash Screen vistosa a toda pantalla dentro del espacio de la app (se cierra sola tras 2.0s)
     if (uiState.showSplashScreen) {
         SplashScreenContent()
         return
@@ -523,15 +551,19 @@ fun MainScreen(
                             }
 
                             // Bucle continuo de autodesplazamiento conducido por recordingStatus, isAutoScrollEnabled y autoScrollSpeed
+                            // Se retrasa 1 segundo al comenzar la grabación (segundo 00:01) antes de empezar a desplazarse
                             LaunchedEffect(
                                 uiState.recordingStatus,
                                 uiState.isAutoScrollEnabled,
                                 uiState.autoScrollSpeed
                             ) {
                                 if (uiState.recordingStatus == RecordingStatus.Recording && uiState.isAutoScrollEnabled) {
+                                    if (uiState.recordingTimeSeconds < 1L) {
+                                        delay(1000)
+                                    }
                                     while (uiState.recordingStatus == RecordingStatus.Recording && uiState.isAutoScrollEnabled) {
                                         delay(40) // 25 FPS
-                                        val step = (uiState.autoScrollSpeed * 0.8f).toInt().coerceAtLeast(1)
+                                        val step = (uiState.autoScrollSpeed * 0.4f).toInt().coerceAtLeast(1)
                                         val nextPos = (teleprompterScrollState.value + step).coerceAtMost(teleprompterScrollState.maxValue)
                                         teleprompterScrollState.scrollTo(nextPos)
                                         if (teleprompterScrollState.value >= teleprompterScrollState.maxValue) {
@@ -2066,7 +2098,7 @@ fun TimeWarningDialog(
     )
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, androidx.compose.foundation.ExperimentalFoundationApi::class)
 @Composable
 fun TextEditorScreen(
     initialText: String,
@@ -2084,9 +2116,31 @@ fun TextEditorScreen(
     }
     var showExitDialog by remember { mutableStateOf(false) }
 
+    val editorScrollState = rememberScrollState()
+    val bringIntoViewRequester = remember { BringIntoViewRequester() }
+    val coroutineScope = rememberCoroutineScope()
+    val focusRequester = remember { FocusRequester() }
+    var isFocused by remember { mutableStateOf(false) }
+    var textLayoutResult by remember { mutableStateOf<androidx.compose.ui.text.TextLayoutResult?>(null) }
+
     val context = LocalContext.current
     val clipboardManager = remember {
         context.getSystemService(Context.CLIPBOARD_SERVICE) as? android.content.ClipboardManager
+    }
+
+    // Mantener la posición del cursor visible cuando cambia la visibilidad o tamaño del teclado
+    val imeInsets = WindowInsets.ime
+    val density = androidx.compose.ui.platform.LocalDensity.current
+    val imeBottom = imeInsets.getBottom(density)
+    LaunchedEffect(imeBottom) {
+        if (imeBottom > 0) {
+            delay(100)
+            textLayoutResult?.let { layout ->
+                val cursorPos = textFieldValue.selection.start.coerceIn(0, textFieldValue.text.length)
+                val cursorRect = layout.getCursorRect(cursorPos)
+                bringIntoViewRequester.bringIntoView(cursorRect)
+            }
+        }
     }
 
     fun handleBackAttempt() {
@@ -2266,15 +2320,61 @@ fun TextEditorScreen(
                 }
             }
 
-            OutlinedTextField(
-                value = textFieldValue,
-                onValueChange = { textFieldValue = it },
+            Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .weight(1f),
-                placeholder = { Text("Ejemplo: 'Hola a todos, bienvenidos a este podcast...'") },
-                textStyle = MaterialTheme.typography.bodyLarge.copy(fontSize = 20.sp, lineHeight = 28.sp)
-            )
+                    .weight(1f)
+                    .border(
+                        width = if (isFocused) 2.dp else 1.dp,
+                        color = if (isFocused) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline,
+                        shape = RoundedCornerShape(4.dp)
+                    )
+                    .clickable(
+                        interactionSource = remember { MutableInteractionSource() },
+                        indication = null
+                    ) {
+                        focusRequester.requestFocus()
+                    }
+                    .padding(16.dp)
+                    .verticalScroll(editorScrollState)
+            ) {
+                BasicTextField(
+                    value = textFieldValue,
+                    onValueChange = { textFieldValue = it },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .focusRequester(focusRequester)
+                        .onFocusChanged { isFocused = it.isFocused }
+                        .bringIntoViewRequester(bringIntoViewRequester),
+                    textStyle = MaterialTheme.typography.bodyLarge.copy(
+                        fontSize = 20.sp,
+                        lineHeight = 28.sp,
+                        color = MaterialTheme.colorScheme.onSurface
+                    ),
+                    cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
+                    onTextLayout = { layoutResult ->
+                        textLayoutResult = layoutResult
+                        val cursorPos = textFieldValue.selection.start.coerceIn(0, textFieldValue.text.length)
+                        val cursorRect = layoutResult.getCursorRect(cursorPos)
+                        coroutineScope.launch {
+                            bringIntoViewRequester.bringIntoView(cursorRect)
+                        }
+                    },
+                    decorationBox = { innerTextField ->
+                        if (textFieldValue.text.isEmpty()) {
+                            Text(
+                                text = "Ejemplo: 'Hola a todos, bienvenidos a este podcast...'",
+                                style = MaterialTheme.typography.bodyLarge.copy(
+                                    fontSize = 20.sp,
+                                    lineHeight = 28.sp,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            )
+                        }
+                        innerTextField()
+                    }
+                )
+            }
         }
     }
 

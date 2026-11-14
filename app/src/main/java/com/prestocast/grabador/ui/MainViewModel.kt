@@ -140,7 +140,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     init {
         loadCredentials()
         viewModelScope.launch {
-            delay(3000)
+            delay(2000)
             _uiState.value = _uiState.value.copy(showSplashScreen = false)
         }
     }
@@ -455,13 +455,13 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                 countdownSecondsRemaining = 3
             )
 
-            // Segundo 1 de aviso (Faltan 2s de tonos): Pitido 800 Hz
-            viewModelScope.launch { TimeWarningManager.playBeep(800) }
+            // Segundo 1 de aviso (Faltan 2s de tonos): Pitido 1200 Hz
+            viewModelScope.launch { TimeWarningManager.playBeep(1200) }
             delay(1000)
 
             _uiState.value = _uiState.value.copy(countdownSecondsRemaining = 2)
-            // Segundo 2 de aviso (Falta 1s de tonos): Pitido 1200 Hz
-            viewModelScope.launch { TimeWarningManager.playBeep(1200) }
+            // Segundo 2 de aviso (Falta 1s de tonos): Pitido 1800 Hz
+            viewModelScope.launch { TimeWarningManager.playBeep(1800) }
             delay(1000)
 
             _uiState.value = _uiState.value.copy(countdownSecondsRemaining = 1)
