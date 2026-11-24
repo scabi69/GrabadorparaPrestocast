@@ -1,4 +1,4 @@
-# 🎙️ Grabador Prestocast (v1.3.5.3)
+# 🎙️ Grabador Prestocast (v1.3.6.0)
 
 **Grabador Prestocast** es una aplicación nativa para Android desarrollada en Kotlin y Jetpack Compose, diseñada para grabar audio en alta fidelidad (formato `.m4a`/`AAC` nativo o archivos locales importados), transcodificar localmente a **MP3 genuino** mediante el motor C/JNI **LAME MP3**, integrarse con el servicio de postprocesamiento en la nube **Auphonic.com** (nivelación inteligente, reducción de ruido con IA y salida MP3), y proporcionar un sistema de guión / teleprompter para podcasts, boletines y locuciones.
 
@@ -69,6 +69,11 @@
 
 ## 📜 Historial de Cambios (Changelog)
 
+### 🟢 v1.3.6.0
+- **Pausa de 2s en Autodesplazamiento del Teleprompter**: El desplazamiento automático del guión ahora espera 2 segundos desde el inicio real de la grabación antes de comenzar a moverse, dando un margen extra de comodidad al locutor.
+- **Opción "Activar No Molestar"**: Nueva opción en la ventana de *Opciones de Grabación* (con persistencia en `SharedPreferences`) que, al activarse, pone automáticamente el teléfono en modo No Molestar (`INTERRUPTION_FILTER_NONE`) justo antes de iniciar la cuenta atrás de grabación. Requiere conceder el permiso *"No Molestar"* a la app desde los Ajustes del sistema. Si el permiso no ha sido concedido, la opción no tiene efecto.
+- **Subida de Versión**: Actualizado a `v1.3.6.0` (`versionCode = 17`).
+
 ### 🟢 v1.3.5.3
 - **Duración del Splash Screen Ajustada**: Tiempo de visualización de la pantalla de bienvenida reducido a 2.0 segundos (2000 ms) para un acceso más ágil.
 - **Preservación del Cursor y Visibilidad en Editor de Guión**: Solucionado el problema por el cual al pulsar sobre el texto para editar y desplegarse el teclado en el móvil, el texto se desplazaba y la posición del cursor se perdía fuera de la vista. Se configuró `android:windowSoftInputMode="adjustResize"` en `AndroidManifest.xml` y se implementó un `ScrollState` dedicado con `BringIntoViewRequester` y seguimiento de los insets del teclado (`WindowInsets.ime`), asegurando que la posición del cursor permanezca visible y centrada en pantalla al encogerse el cuadro de edición.
@@ -120,7 +125,7 @@
 ## 🛠️ Requisitos del Proyecto
 
 - **Android SDK**: Mínimo API 24 (Android 7.0) / Target API 35 (Android 15).
-- **Versión de la App**: v1.3.5.3 (`versionCode 16`).
+- **Versión de la App**: v1.3.6.0 (`versionCode 17`).
 - **Lenguaje**: Kotlin 2.1.0.
 - **UI Framework**: Jetpack Compose (Material 3).
 - **Herramienta de Construcción**: Gradle 9.6 / AGP 8.7.3 (con Java 17/21).

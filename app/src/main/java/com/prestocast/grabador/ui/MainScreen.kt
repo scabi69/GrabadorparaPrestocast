@@ -551,15 +551,15 @@ fun MainScreen(
                             }
 
                             // Bucle continuo de autodesplazamiento conducido por recordingStatus, isAutoScrollEnabled y autoScrollSpeed
-                            // Se retrasa 1 segundo al comenzar la grabación (segundo 00:01) antes de empezar a desplazarse
+                            // Se retrasa 2 segundos al comenzar la grabación antes de empezar a desplazarse
                             LaunchedEffect(
                                 uiState.recordingStatus,
                                 uiState.isAutoScrollEnabled,
                                 uiState.autoScrollSpeed
                             ) {
                                 if (uiState.recordingStatus == RecordingStatus.Recording && uiState.isAutoScrollEnabled) {
-                                    if (uiState.recordingTimeSeconds < 1L) {
-                                        delay(1000)
+                                    if (uiState.recordingTimeSeconds < 2L) {
+                                        delay(2000)
                                     }
                                     while (uiState.recordingStatus == RecordingStatus.Recording && uiState.isAutoScrollEnabled) {
                                         delay(40) // 25 FPS
@@ -1075,11 +1075,13 @@ fun MainScreen(
             initialInputDeviceName = uiState.recInputDeviceName,
             initialTimeWarningMode = uiState.timeWarningMode,
             initialTimeWarningCustomMins = uiState.timeWarningCustomMins,
+            initialDoNotDisturbEnabled = uiState.doNotDisturbEnabled,
             onOpenTimeWarnings = { viewModel.toggleTimeWarningDialog(true) },
             onOpenAbout = { viewModel.toggleAboutDialog(true) },
             onDismiss = { viewModel.toggleRecordingSettingsDialog(false) },
-            onSave = { bitrate, channels, sampleRate, prefix, suffix, deviceId, deviceName ->
+            onSave = { bitrate, channels, sampleRate, prefix, suffix, deviceId, deviceName, dnd ->
                 viewModel.saveRecordingSettings(bitrate, channels, sampleRate, prefix, suffix, deviceId, deviceName)
+                viewModel.updateDoNotDisturbEnabled(dnd)
             }
         )
     }
@@ -1634,6 +1636,7 @@ fun RecordingSettingsDialog(
     initialInputDeviceName: String,
     initialTimeWarningMode: Int,
     initialTimeWarningCustomMins: Int,
+    initialDoNotDisturbEnabled: Boolean,
     onOpenTimeWarnings: () -> Unit,
     onOpenAbout: () -> Unit,
     onDismiss: () -> Unit,
@@ -1644,7 +1647,8 @@ fun RecordingSettingsDialog(
         prefix: String,
         suffix: String,
         inputDeviceId: Int,
-        inputDeviceName: String
+        inputDeviceName: String,
+        doNotDisturb: Boolean
     ) -> Unit
 ) {
     val context = LocalContext.current
@@ -1657,6 +1661,7 @@ fun RecordingSettingsDialog(
 
     var selectedInputDeviceId by remember { mutableIntStateOf(initialInputDeviceId) }
     var selectedInputDeviceName by remember { mutableStateOf(initialInputDeviceName) }
+    var doNotDisturbEnabled by remember { mutableStateOf(initialDoNotDisturbEnabled) }
 
     var availableMicrophones by remember {
         mutableStateOf(AudioInputManager.getAvailableMicrophones(context))
@@ -1957,7 +1962,33 @@ fun RecordingSettingsDialog(
 
                 HorizontalDivider()
 
-                // 8. Botón Acerca de
+                // 8. Activar No Molestar al grabar
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            "Activar No Molestar",
+                            style = MaterialTheme.typography.labelMedium,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Text(
+                            "Al grabar, pone el teléfono en modo No Molestar antes de la cuenta atrás. Requiere permiso en Ajustes del sistema.",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                    Switch(
+                        checked = doNotDisturbEnabled,
+                        onCheckedChange = { doNotDisturbEnabled = it }
+                    )
+                }
+
+                HorizontalDivider()
+
+                // 9. Botón Acerca de
                 OutlinedButton(
                     onClick = { onOpenAbout() },
                     modifier = Modifier.fillMaxWidth()
@@ -1973,7 +2004,7 @@ fun RecordingSettingsDialog(
         },
         confirmButton = {
             Button(
-                onClick = { onSave(bitrate, channels, sampleRate, prefix, suffix, selectedInputDeviceId, selectedInputDeviceName) }
+                onClick = { onSave(bitrate, channels, sampleRate, prefix, suffix, selectedInputDeviceId, selectedInputDeviceName, doNotDisturbEnabled) }
             ) {
                 Text("Guardar")
             }

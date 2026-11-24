@@ -9,7 +9,7 @@ plugins {
 }
 
 val buildTimestamp: String = SimpleDateFormat("yyyyMMddHHmm", Locale.US).format(Date())
-val appVersionName = "1.3.5.3"
+val appVersionName = "1.3.6.0"
 
 android {
     namespace = "com.prestocast.grabador"
@@ -19,7 +19,7 @@ android {
         applicationId = "com.prestocast.grabador"
         minSdk = 24
         targetSdk = 35
-        versionCode = 16
+        versionCode = 17
         versionName = appVersionName
 
         buildConfigField("String", "BUILD_TIMESTAMP", "\"$buildTimestamp\"")

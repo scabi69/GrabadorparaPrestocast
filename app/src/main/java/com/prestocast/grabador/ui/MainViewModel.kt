@@ -1,6 +1,7 @@
 package com.prestocast.grabador.ui
 
 import android.app.Application
+import android.app.NotificationManager
 import android.content.ContentValues
 import android.content.Context
 import android.media.AudioAttributes
@@ -96,6 +97,7 @@ data class UiState(
     val timeWarningCustomMins: Int = 5,
     val isAutoScrollEnabled: Boolean = false,
     val autoScrollSpeed: Float = 5f,
+    val doNotDisturbEnabled: Boolean = false,
     val recBitrateKbps: Int = 128,
     val recChannels: Int = 2,
     val recSampleRateHz: Int = 44100,
@@ -168,7 +170,8 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             timeWarningMode = prefs.getTimeWarningMode(),
             timeWarningCustomMins = prefs.getTimeWarningCustomMinutes(),
             isAutoScrollEnabled = prefs.getAutoScrollEnabled(),
-            autoScrollSpeed = prefs.getAutoScrollSpeed()
+            autoScrollSpeed = prefs.getAutoScrollSpeed(),
+            doNotDisturbEnabled = prefs.getDoNotDisturbEnabled()
         )
 
         if (apiKey.isNotBlank()) {
@@ -439,6 +442,22 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
+    fun updateDoNotDisturbEnabled(enabled: Boolean) {
+        prefs.saveDoNotDisturbEnabled(enabled)
+        _uiState.value = _uiState.value.copy(doNotDisturbEnabled = enabled)
+    }
+
+    private fun activateDoNotDisturb() {
+        try {
+            val nm = context.getSystemService(Context.NOTIFICATION_SERVICE) as? NotificationManager
+            if (nm != null && nm.isNotificationPolicyAccessGranted) {
+                nm.setInterruptionFilter(NotificationManager.INTERRUPTION_FILTER_NONE)
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+
     fun startRecording() {
         stopPlayback()
         pauseSystemMediaPlayback()
@@ -446,6 +465,11 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         if (_uiState.value.recordingStatus is RecordingStatus.Countdown ||
             _uiState.value.recordingStatus is RecordingStatus.Recording) {
             return
+        }
+
+        // Activar No Molestar antes de la cuenta atrás si la opción está habilitada
+        if (_uiState.value.doNotDisturbEnabled) {
+            activateDoNotDisturb()
         }
 
         countdownJob?.cancel()

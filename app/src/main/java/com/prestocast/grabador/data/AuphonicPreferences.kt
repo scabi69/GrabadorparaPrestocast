@@ -159,6 +159,14 @@ class AuphonicPreferences(context: Context) {
         prefs.edit().putFloat(KEY_TELEPROMPTER_AUTO_SCROLL_SPEED, speed).apply()
     }
 
+    fun getDoNotDisturbEnabled(): Boolean {
+        return prefs.getBoolean(KEY_DO_NOT_DISTURB, false)
+    }
+
+    fun saveDoNotDisturbEnabled(enabled: Boolean) {
+        prefs.edit().putBoolean(KEY_DO_NOT_DISTURB, enabled).apply()
+    }
+
     fun getEffectivePreset(): String {
         if (getIsCustomPreset() && getCustomPresetInput().isNotBlank()) {
             return getCustomPresetInput()
@@ -194,6 +202,7 @@ class AuphonicPreferences(context: Context) {
         private const val KEY_TIME_WARNING_CUSTOM_MINS = "time_warning_custom_mins"
         private const val KEY_TELEPROMPTER_AUTO_SCROLL_ENABLED = "teleprompter_auto_scroll_enabled"
         private const val KEY_TELEPROMPTER_AUTO_SCROLL_SPEED = "teleprompter_auto_scroll_speed"
+        private const val KEY_DO_NOT_DISTURB = "do_not_disturb_enabled"
         const val DEFAULT_PRESET = "auphonic_cleaner"
     }
 }
