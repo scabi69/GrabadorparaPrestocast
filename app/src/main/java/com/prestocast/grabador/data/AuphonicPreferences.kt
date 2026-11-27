@@ -159,13 +159,17 @@ class AuphonicPreferences(context: Context) {
         prefs.edit().putFloat(KEY_TELEPROMPTER_AUTO_SCROLL_SPEED, speed).apply()
     }
 
-    fun getDoNotDisturbEnabled(): Boolean {
+    fun getSilentModeEnabled(): Boolean {
         return prefs.getBoolean(KEY_DO_NOT_DISTURB, false)
     }
 
-    fun saveDoNotDisturbEnabled(enabled: Boolean) {
+    fun saveSilentModeEnabled(enabled: Boolean) {
         prefs.edit().putBoolean(KEY_DO_NOT_DISTURB, enabled).apply()
     }
+
+    fun getDoNotDisturbEnabled(): Boolean = getSilentModeEnabled()
+
+    fun saveDoNotDisturbEnabled(enabled: Boolean) = saveSilentModeEnabled(enabled)
 
     fun getEffectivePreset(): String {
         if (getIsCustomPreset() && getCustomPresetInput().isNotBlank()) {

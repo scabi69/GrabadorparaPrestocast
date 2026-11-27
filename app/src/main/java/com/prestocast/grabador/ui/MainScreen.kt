@@ -1075,13 +1075,13 @@ fun MainScreen(
             initialInputDeviceName = uiState.recInputDeviceName,
             initialTimeWarningMode = uiState.timeWarningMode,
             initialTimeWarningCustomMins = uiState.timeWarningCustomMins,
-            initialDoNotDisturbEnabled = uiState.doNotDisturbEnabled,
+            initialSilentModeEnabled = uiState.silentModeEnabled,
             onOpenTimeWarnings = { viewModel.toggleTimeWarningDialog(true) },
             onOpenAbout = { viewModel.toggleAboutDialog(true) },
             onDismiss = { viewModel.toggleRecordingSettingsDialog(false) },
-            onSave = { bitrate, channels, sampleRate, prefix, suffix, deviceId, deviceName, dnd ->
+            onSave = { bitrate, channels, sampleRate, prefix, suffix, deviceId, deviceName, silent ->
                 viewModel.saveRecordingSettings(bitrate, channels, sampleRate, prefix, suffix, deviceId, deviceName)
-                viewModel.updateDoNotDisturbEnabled(dnd)
+                viewModel.updateSilentModeEnabled(silent)
             }
         )
     }
@@ -1636,7 +1636,7 @@ fun RecordingSettingsDialog(
     initialInputDeviceName: String,
     initialTimeWarningMode: Int,
     initialTimeWarningCustomMins: Int,
-    initialDoNotDisturbEnabled: Boolean,
+    initialSilentModeEnabled: Boolean,
     onOpenTimeWarnings: () -> Unit,
     onOpenAbout: () -> Unit,
     onDismiss: () -> Unit,
@@ -1648,7 +1648,7 @@ fun RecordingSettingsDialog(
         suffix: String,
         inputDeviceId: Int,
         inputDeviceName: String,
-        doNotDisturb: Boolean
+        silentMode: Boolean
     ) -> Unit
 ) {
     val context = LocalContext.current
@@ -1661,7 +1661,7 @@ fun RecordingSettingsDialog(
 
     var selectedInputDeviceId by remember { mutableIntStateOf(initialInputDeviceId) }
     var selectedInputDeviceName by remember { mutableStateOf(initialInputDeviceName) }
-    var doNotDisturbEnabled by remember { mutableStateOf(initialDoNotDisturbEnabled) }
+    var silentModeEnabled by remember { mutableStateOf(initialSilentModeEnabled) }
 
     var availableMicrophones by remember {
         mutableStateOf(AudioInputManager.getAvailableMicrophones(context))
@@ -1962,7 +1962,7 @@ fun RecordingSettingsDialog(
 
                 HorizontalDivider()
 
-                // 8. Activar No Molestar al grabar
+                // 8. Activar Modo Silencio al grabar
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically,
@@ -1970,19 +1970,19 @@ fun RecordingSettingsDialog(
                 ) {
                     Column(modifier = Modifier.weight(1f)) {
                         Text(
-                            "Activar No Molestar",
+                            "Activar Modo Silencio",
                             style = MaterialTheme.typography.labelMedium,
                             fontWeight = FontWeight.Bold
                         )
                         Text(
-                            "Al grabar, pone el teléfono en modo No Molestar antes de la cuenta atrás. Requiere permiso en Ajustes del sistema.",
+                            "Al comenzar la grabación, activa el modo silencio y restaura el modo de sonido previo al finalizar. Requiere permiso de acceso a la política de notificaciones en el sistema.",
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
                     Switch(
-                        checked = doNotDisturbEnabled,
-                        onCheckedChange = { doNotDisturbEnabled = it }
+                        checked = silentModeEnabled,
+                        onCheckedChange = { silentModeEnabled = it }
                     )
                 }
 
@@ -2004,7 +2004,7 @@ fun RecordingSettingsDialog(
         },
         confirmButton = {
             Button(
-                onClick = { onSave(bitrate, channels, sampleRate, prefix, suffix, selectedInputDeviceId, selectedInputDeviceName, doNotDisturbEnabled) }
+                onClick = { onSave(bitrate, channels, sampleRate, prefix, suffix, selectedInputDeviceId, selectedInputDeviceName, silentModeEnabled) }
             ) {
                 Text("Guardar")
             }

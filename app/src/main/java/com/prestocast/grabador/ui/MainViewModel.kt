@@ -4,6 +4,7 @@ import android.app.Application
 import android.app.NotificationManager
 import android.content.ContentValues
 import android.content.Context
+import android.content.Intent
 import android.media.AudioAttributes
 import android.media.AudioFocusRequest
 import android.media.AudioManager
@@ -13,6 +14,7 @@ import android.os.Environment
 import android.os.SystemClock
 import android.provider.MediaStore
 import android.provider.OpenableColumns
+import android.provider.Settings
 import android.view.KeyEvent
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
@@ -97,7 +99,7 @@ data class UiState(
     val timeWarningCustomMins: Int = 5,
     val isAutoScrollEnabled: Boolean = false,
     val autoScrollSpeed: Float = 5f,
-    val doNotDisturbEnabled: Boolean = false,
+    val silentModeEnabled: Boolean = false,
     val recBitrateKbps: Int = 128,
     val recChannels: Int = 2,
     val recSampleRateHz: Int = 44100,
@@ -115,7 +117,9 @@ data class UiState(
     val teleprompterText: String = "",
     val showTextEditorScreen: Boolean = false,
     val toastMessage: String? = null
-)
+) {
+    val doNotDisturbEnabled: Boolean get() = silentModeEnabled
+}
 
 class MainViewModel(application: Application) : AndroidViewModel(application) {
 
@@ -171,7 +175,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             timeWarningCustomMins = prefs.getTimeWarningCustomMinutes(),
             isAutoScrollEnabled = prefs.getAutoScrollEnabled(),
             autoScrollSpeed = prefs.getAutoScrollSpeed(),
-            doNotDisturbEnabled = prefs.getDoNotDisturbEnabled()
+            silentModeEnabled = prefs.getSilentModeEnabled()
         )
 
         if (apiKey.isNotBlank()) {
@@ -442,19 +446,56 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    fun updateDoNotDisturbEnabled(enabled: Boolean) {
-        prefs.saveDoNotDisturbEnabled(enabled)
-        _uiState.value = _uiState.value.copy(doNotDisturbEnabled = enabled)
+    private var previousRingerMode: Int? = null
+
+    fun updateSilentModeEnabled(enabled: Boolean) {
+        prefs.saveSilentModeEnabled(enabled)
+        _uiState.value = _uiState.value.copy(silentModeEnabled = enabled)
     }
 
-    private fun activateDoNotDisturb() {
+    fun updateDoNotDisturbEnabled(enabled: Boolean) = updateSilentModeEnabled(enabled)
+
+    private fun activateSilentMode() {
         try {
             val nm = context.getSystemService(Context.NOTIFICATION_SERVICE) as? NotificationManager
+            val audioManager = context.getSystemService(Context.AUDIO_SERVICE) as? AudioManager
+
             if (nm != null && nm.isNotificationPolicyAccessGranted) {
-                nm.setInterruptionFilter(NotificationManager.INTERRUPTION_FILTER_NONE)
+                if (audioManager != null) {
+                    if (previousRingerMode == null) {
+                        previousRingerMode = audioManager.ringerMode
+                    }
+                    audioManager.ringerMode = AudioManager.RINGER_MODE_SILENT
+                }
+            } else {
+                showToast("Para activar el modo silencio se requiere permiso de acceso a la política de notificaciones")
+                try {
+                    val intent = Intent(Settings.ACTION_NOTIFICATION_POLICY_ACCESS_SETTINGS).apply {
+                        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                    }
+                    context.startActivity(intent)
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
             }
         } catch (e: Exception) {
             e.printStackTrace()
+        }
+    }
+
+    private fun restoreRingerMode() {
+        try {
+            val savedMode = previousRingerMode ?: return
+            val nm = context.getSystemService(Context.NOTIFICATION_SERVICE) as? NotificationManager
+            val audioManager = context.getSystemService(Context.AUDIO_SERVICE) as? AudioManager
+
+            if (nm != null && nm.isNotificationPolicyAccessGranted && audioManager != null) {
+                audioManager.ringerMode = savedMode
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+        } finally {
+            previousRingerMode = null
         }
     }
 
@@ -467,9 +508,9 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             return
         }
 
-        // Activar No Molestar antes de la cuenta atrás si la opción está habilitada
-        if (_uiState.value.doNotDisturbEnabled) {
-            activateDoNotDisturb()
+        // Activar Modo Silencio antes de la cuenta atrás si la opción está habilitada
+        if (_uiState.value.silentModeEnabled) {
+            activateSilentMode()
         }
 
         countdownJob?.cancel()
@@ -536,6 +577,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             startTimer()
         } else {
             AudioRecordingService.stopService(context)
+            restoreRingerMode()
             _uiState.value = _uiState.value.copy(recordingStatus = RecordingStatus.Idle)
             showToast("Error al iniciar la grabación")
         }
@@ -567,6 +609,9 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
         // Detener servicio en primer plano y liberar WakeLock
         AudioRecordingService.stopService(context)
+
+        // Restaurar modo de sonido previo al silencio
+        restoreRingerMode()
 
         recordingStartTimeMs = 0L
         totalPausedDurationMs = 0L
@@ -1120,6 +1165,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     override fun onCleared() {
         super.onCleared()
+        restoreRingerMode()
         recorder.stopRecording()
         player.stop()
     }

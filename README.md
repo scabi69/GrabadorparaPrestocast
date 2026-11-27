@@ -69,6 +69,11 @@
 
 ## 📜 Historial de Cambios (Changelog)
 
+### 🟢 v1.3.6.1
+- **Cambio de Modo No Molestar a Modo Silencio**: Se reemplazó la activación de No Molestar por el Modo Silencio (`AudioManager.RINGER_MODE_SILENT`), asegurando compatibilidad en teléfonos Xiaomi / MIUI / HyperOS y Android en general.
+- **Restauración Automática de Sonido**: Al finalizar o cancelar la grabación, la aplicación restaura automáticamente el modo de sonido previo que tenía el teléfono.
+- **Subida de Versión**: Actualizado a `v1.3.6.1` (`versionCode = 18`).
+
 ### 🟢 v1.3.6.0
 - **Pausa de 2s en Autodesplazamiento del Teleprompter**: El desplazamiento automático del guión ahora espera 2 segundos desde el inicio real de la grabación antes de comenzar a moverse, dando un margen extra de comodidad al locutor.
 - **Opción "Activar No Molestar"**: Nueva opción en la ventana de *Opciones de Grabación* (con persistencia en `SharedPreferences`) que, al activarse, pone automáticamente el teléfono en modo No Molestar (`INTERRUPTION_FILTER_NONE`) justo antes de iniciar la cuenta atrás de grabación. Requiere conceder el permiso *"No Molestar"* a la app desde los Ajustes del sistema. Si el permiso no ha sido concedido, la opción no tiene efecto.
